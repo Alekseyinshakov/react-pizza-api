@@ -1,41 +1,38 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
-
 const app = express();
 
-// Middleware
 app.use(express.json());
 
-// CORS
+// CORS middleware
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Headers', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
     next();
 });
 
-// Чтение данных из db.json
-function getData() {
-    try {
-        const data = fs.readFileSync(path.join(__dirname, '../db.json'), 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        return {};
-    }
-}
-
-// Простые маршруты
-app.get('/:resource', (req, res) => {
-    const data = getData();
-    const resource = req.params.resource;
-
-    if (data[resource]) {
-        res.json(data[resource]);
-    } else {
-        res.status(404).json({ error: 'Resource not found' });
-    }
+// Простые тестовые маршруты
+app.get('/', (req, res) => {
+    res.json({ message: 'Server is working!' });
 });
 
-// Экспорт для Vercel
+app.get('/posts', (req, res) => {
+    res.json([
+        { id: 1, title: 'First Post', author: 'John' },
+        { id: 2, title: 'Second Post', author: 'Jane' }
+    ]);
+});
+
+app.get('/users', (req, res) => {
+    res.json([
+        { id: 1, name: 'John Doe', email: 'john@example.com' },
+        { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+    ]);
+});
+
+// Обработчик для Vercel
 module.exports = app;
